@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function ImageUploader() {
+export default function ImageUploader({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
@@ -59,11 +59,14 @@ export default function ImageUploader() {
       if (uploadToS3.ok) {
         alert("S3에 이미지 업로드 성공! 🎉");
 
-        // 업로드된 이미지의 진짜 S3 주소 조합해서 상태에 저장 (화면에 띄우기 위함)
-        // 버킷명과 리전명은 본인의 버킷 정보에 맞게 수정하세요.
-        const finalUrl = `https://${import.meta.env.VITE_S3_BUCKET_NAME}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/${key}`;
-
+        const s3BucketName = import.meta.env.VITE_S3_BUCKET_NAME; // ⭕ 이것도 환경변수로 처리하면 훌륭합니다!
+        const finalUrl = `https://${s3BucketName}.s3.ap-northeast-2.amazonaws.com/${key}`;
         setImageUrl(finalUrl);
+
+        // ⭕ 업로드 성공 후 상단 App.jsx의 리스트를 새로고침하라고 신호 주기
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
       } else {
         throw new Error("S3 버킷으로 파일 전송 중 에러가 발생했습니다.");
       }
